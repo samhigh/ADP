@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    #imageSection {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f4f4f4;
+      border-right: 1px solid #ccc;
+      overflow: hidden;
+    }
+
+    #chatSection {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 20px;
+    }
+
+    #chatWindow {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    #chatInput {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    #chatInput input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    #chatInput button {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    #textControls {
+      display: flex;
+      align-items: center;
+    }
+
+    #textControls label {
+      margin-right: 10px;
+    }
+
+    #textControls input {
+      width: 100px;
+    }
+
+    canvas {
+      cursor: grab;
+    }
+
+    canvas:active {
+      cursor: grabbing;
+    }
+  </style>
+</head>
+<body>
+  <div id="imageSection">
+    <canvas id="productCanvas"></canvas>
+  </div>
+  <div id="chatSection">
+    <div id="chatWindow"></div>
+    <div id="chatInput">
+      <input type="text" id="chatMessage" placeholder="Type a message...">
+      <button id="sendMessage">Send</button>
+      <button id="clearText">Clear</button>
+    </div>
+    <div id="textControls">
+      <label for="textSize">Text Size:</label>
+      <input type="range" id="textSize" min="10" max="60" value="30">
+    </div>
+  </div>
+  <script>
+    const queryParams = new URLSearchParams(window.location.search);
+    const productId = queryParams.get('id'); // Get productId from URL
+
+    const products = [
+      { id: 1, name: 'Personalized Mug', image: '/images/mug.png' },
+      { id: 2, name: 'Custom T-Shirt', image: '/images/tshirt.png' },
+      { id: 3, name: 'Engraved Keychain', image: '/images/keychain.png' },
+    ];
+
+    const product = products.find(p => p.id == productId);
+    const canvas = document.getElementById('productCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentText = '';
+    let textSize = 30;
+    let textX = 100; // Default X position
+    let textY = 100; // Default Y position
+    let zoomLevel = 1;
+    let baseImage = null;
+
+    function loadProductImage() {
+      if (product) {
+        const img = new Image();
+        img.src = product.image;
+        img.onload = () => {
+          baseImage = img;
+          redrawCanvas();
+        };
+      }
+    }
+
+    function redrawCanvas() {
+      if (baseImage) {
+        canvas.width = baseImage.width * zoomLevel;
+        canvas.height = baseImage.height * zoomLevel;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the base image
+        ctx.drawImage(
+          baseImage,
+          0,
+          0,
+          baseImage.width * zoomLevel,
+          baseImage.height * zoomLevel
+        );
+
+        // Draw the text on top of the image
+        drawText();
+      }
+    }
+
+    function drawText() {
+      if (currentText) {
+        ctx.save();
+        ctx.font = `${textSize * zoomLevel}px Arial`;
+        ctx.fillStyle = 'red';
+        ctx.textAlign = 'center';
+
+        // Adjust text position based on zoom
+        const adjustedX = textX * zoomLevel;
+        const adjustedY = textY * zoomLevel;
+
+        ctx.fillText(currentText, adjustedX, adjustedY);
+        ctx.restore();
+      }
+    }
+
+    function handleWheel(e) {
+      e.preventDefault();
+      const scaleAmount = e.deltaY > 0 ? 0.9 : 1.1;
+      zoomLevel *= scaleAmount;
+      redrawCanvas();
+    }
+
+    const sendMessage = document.getElementById('sendMessage');
+    const chatMessage = document.getElementById('chatMessage');
+    const chatWindow = document.getElementById('chatWindow');
+
+    sendMessage.addEventListener('click', async () => {
+      const userMessage = chatMessage.value.trim();
+      if (!userMessage) return;
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      const data = await response.json();
+      const botReply = data.reply;
+
+      const botMessage = document.createElement('p');
+      botMessage.textContent = `Bot: ${botReply}`;
+      chatWindow.appendChild(botMessage);
+
+      // Check for customization context
+      if (botReply.includes('"')) {
+        const textMatch = botReply.match(/"([^"]*)"/);
+        if (textMatch) {
+          currentText = textMatch[1];
+          redrawCanvas();
+        }
+      }
+
+      chatMessage.value = '';
+    });
+
+    canvas.addEventListener('wheel', handleWheel);
+
+    loadProductImage();
+  </script>
+</body>
+</html>

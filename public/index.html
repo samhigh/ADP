@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personalized Gift Shop</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #app {
+      max-width: 600px;
+      width: 100%;
+      padding: 20px;
+    }
+
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #results {
+      margin-top: 20px;
+    }
+
+    .product {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .product img {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    .product p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Welcome to the Personalized Gift Shop</h1>
+    <input type="text" id="searchBar" placeholder="Search for a product or name..." />
+    <button id="searchBtn">Search</button>
+    <div id="results"></div>
+  </div>
+  <script>
+    const searchBtn = document.getElementById('searchBtn');
+    const searchBar = document.getElementById('searchBar');
+    const results = document.getElementById('results');
+  
+    searchBtn.addEventListener('click', async () => {
+      const query = searchBar.value.trim();
+      if (!query) {
+        results.innerHTML = '<p>Please enter a search query.</p>';
+        return;
+      }
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const products = await response.json();
+        if (products.length === 0) {
+          results.innerHTML = '<p>No products found.</p>';
+          return;
+        }
+        results.innerHTML = products
+          .map(product => `
+            <div class="product" onclick="goToProduct(${product.id})">
+              <img src="${product.image}" alt="${product.name}" />
+              <p>${product.name}</p>
+            </div>
+          `)
+          .join('');
+      } catch (error) {
+        results.innerHTML = '<p>There was an error fetching the products.</p>';
+        console.error(error);
+      }
+    });
+  
+    function goToProduct(productId) {
+      window.location.href = `/product.html?id=${productId}`;
+    }
+  </script>
+</body>
+</html>
