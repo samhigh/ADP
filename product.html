@@ -100,9 +100,9 @@
     const productId = queryParams.get('id'); // Get productId from URL
 
     const products = [
-      { id: 1, name: 'Personalized Mug', image: '/images/mug.png' },
-      { id: 2, name: 'Custom T-Shirt', image: '/images/tshirt.png' },
-      { id: 3, name: 'Engraved Keychain', image: '/images/keychain.png' },
+      { id: 1, name: 'Personalized Mug', image: './images/mug.png' },
+      { id: 2, name: 'Custom T-Shirt', image: './images/tshirt.png' },
+      { id: 3, name: 'Engraved Keychain', image: './images/keychain.png' },
     ];
 
     const product = products.find(p => p.id == productId);
