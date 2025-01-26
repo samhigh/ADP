@@ -33,15 +33,6 @@ const products = [
 // Context object to track user choices
 const customizationContext = {};
 
-// API endpoint to handle product search
-app.get('/api/search', (req, res) => {
-  const query = req.query.q?.toLowerCase() || '';
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(query)
-  );
-  res.json(filteredProducts);
-});
-
 // Chatbot endpoint
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
@@ -55,8 +46,6 @@ app.post('/api/chat', async (req, res) => {
     if (!customizationContext[req.sessionID]) {
       customizationContext[req.sessionID] = {
         product: null,
-        size: null,
-        color: null,
         text: null,
       };
     }
@@ -64,51 +53,25 @@ app.post('/api/chat', async (req, res) => {
     const context = customizationContext[req.sessionID];
     let botReply = '';
 
-    // Chatbot flow logic
+    // Simplified chatbot logic
     if (!context.product) {
-      if (message.toLowerCase().includes("mug")) {
-        context.product = "mug";
-        botReply = "What size would you like for the mug?";
-      } else if (message.toLowerCase().includes("t-shirt")) {
-        context.product = "t-shirt";
-        botReply = "What size would you like for the t-shirt?";
-      } else if (message.toLowerCase().includes("keychain")) {
-        context.product = "keychain";
-        botReply = "What size would you like for the keychain?";
+      if (message.toLowerCase().includes('mug') || context.product === 'mug') {
+        context.product = 'mug';
+        botReply = 'What name or text would you like to add to the mug?';
+      } else if (message.toLowerCase().includes('t-shirt')) {
+        context.product = 't-shirt';
+        botReply = 'What name or text would you like to add to the t-shirt?';
+      } else if (message.toLowerCase().includes('keychain')) {
+        context.product = 'keychain';
+        botReply = 'What name or text would you like to add to the keychain?';
       } else {
-        botReply = "Which product would you like to customize (e.g., mug, t-shirt, keychain)?";
-      }
-    } else if (!context.size) {
-      if (message.toLowerCase().includes("large")) {
-        context.size = "large";
-        botReply = `What color would you like for the ${context.product}?`;
-      } else if (message.toLowerCase().includes("medium")) {
-        context.size = "medium";
-        botReply = `What color would you like for the ${context.product}?`;
-      } else if (message.toLowerCase().includes("small")) {
-        context.size = "small";
-        botReply = `What color would you like for the ${context.product}?`;
-      } else {
-        botReply = `What size would you like for the ${context.product}? (large, medium, small)`;
-      }
-    } else if (!context.color) {
-      if (message.toLowerCase().includes("white")) {
-        context.color = "white";
-        botReply = `What text would you like to add to the ${context.product}?`;
-      } else if (message.toLowerCase().includes("blue")) {
-        context.color = "blue";
-        botReply = `What text would you like to add to the ${context.product}?`;
-      } else if (message.toLowerCase().includes("red")) {
-        context.color = "red";
-        botReply = `What text would you like to add to the ${context.product}?`;
-      } else {
-        botReply = `What color would you like for the ${context.product}? (white, blue, red)`;
+        botReply = 'Which product would you like to customize? (e.g., mug, t-shirt, keychain)';
       }
     } else if (!context.text) {
-      context.text = message; // Capture the text input
-      botReply = `You’ve chosen a ${context.size} ${context.color} ${context.product} with the text "${context.text}". Let me know if you'd like to make any changes!`;
+      context.text = message.trim(); // Update the context with the provided text
+      botReply = `You’ve chosen to personalize a ${context.product} with the text "${context.text}". Let me know if you'd like to make any changes!`;
     } else {
-      botReply = `You’ve already chosen a ${context.size} ${context.color} ${context.product} with the text "${context.text}". Let me know if you'd like to make any changes!`;
+      botReply = `You’ve already chosen to personalize a ${context.product} with the text "${context.text}". Let me know if you'd like to make any changes!`;
     }
 
     res.json({ reply: botReply });

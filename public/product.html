@@ -20,7 +20,6 @@
       justify-content: center;
       background-color: #f4f4f4;
       border-right: 1px solid #ccc;
-      overflow: hidden;
     }
 
     #chatSection {
@@ -112,29 +111,43 @@
 
     let currentText = '';
     let textSize = 30;
-    let textX = 100; // Default X position
-    let textY = 100; // Default Y position
     let zoomLevel = 1;
     let baseImage = null;
 
+    // Text position defaults
+    let textX = canvas.width / 2;
+    let textY = canvas.height / 2;
+
+    // Dragging variables
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    // Load the product image
     function loadProductImage() {
       if (product) {
         const img = new Image();
         img.src = product.image;
         img.onload = () => {
           baseImage = img;
+
+          // Recalculate the center of the canvas for text placement
+          textX = img.width / 2;
+          textY = img.height / 2;
+
           redrawCanvas();
         };
       }
     }
 
+    // Redraw the canvas with the current image and text
     function redrawCanvas() {
       if (baseImage) {
         canvas.width = baseImage.width * zoomLevel;
         canvas.height = baseImage.height * zoomLevel;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw the base image
+        // Draw the image
         ctx.drawImage(
           baseImage,
           0,
@@ -148,64 +161,131 @@
       }
     }
 
+    // Draw the text on the canvas
     function drawText() {
       if (currentText) {
         ctx.save();
         ctx.font = `${textSize * zoomLevel}px Arial`;
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = 'red'; // Ensure high contrast
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle'; // Vertically center the text
 
-        // Adjust text position based on zoom
-        const adjustedX = textX * zoomLevel;
-        const adjustedY = textY * zoomLevel;
-
-        ctx.fillText(currentText, adjustedX, adjustedY);
+        ctx.fillText(currentText, textX, textY);
         ctx.restore();
       }
     }
 
-    function handleWheel(e) {
-      e.preventDefault();
-      const scaleAmount = e.deltaY > 0 ? 0.9 : 1.1;
-      zoomLevel *= scaleAmount;
+    // Clear text from the canvas
+    function clearText() {
+      currentText = '';
       redrawCanvas();
     }
 
-    const sendMessage = document.getElementById('sendMessage');
-    const chatMessage = document.getElementById('chatMessage');
-    const chatWindow = document.getElementById('chatWindow');
+    // Update text size dynamically
+    const textSizeSlider = document.getElementById('textSize');
+    textSizeSlider.addEventListener('input', (e) => {
+      textSize = parseInt(e.target.value, 10);
+      redrawCanvas();
+    });
 
-    sendMessage.addEventListener('click', async () => {
+    // Function to send chat messages
+    function sendChatMessage() {
       const userMessage = chatMessage.value.trim();
       if (!userMessage) return;
 
-      const response = await fetch('/api/chat', {
+      // Display user message
+      const userMessageElement = document.createElement('p');
+      userMessageElement.textContent = `You: ${userMessage}`;
+      chatWindow.appendChild(userMessageElement);
+
+      fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
-      });
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const botReply = data.reply;
 
-      const data = await response.json();
-      const botReply = data.reply;
+          // Display bot reply
+          const botMessageElement = document.createElement('p');
+          botMessageElement.textContent = `Bot: ${botReply}`;
+          chatWindow.appendChild(botMessageElement);
 
-      const botMessage = document.createElement('p');
-      botMessage.textContent = `Bot: ${botReply}`;
-      chatWindow.appendChild(botMessage);
+          // Update text if bot includes customization
+          if (botReply.includes('"')) {
+            const match = botReply.match(/"([^"]+)"/); // Extract text within quotes
+            if (match && match[1]) {
+              currentText = match[1];
+              redrawCanvas();
+            }
+          }
 
-      // Check for customization context
-      if (botReply.includes('"')) {
-        const textMatch = botReply.match(/"([^"]*)"/);
-        if (textMatch) {
-          currentText = textMatch[1];
-          redrawCanvas();
-        }
+          chatMessage.value = '';
+          chatWindow.scrollTop = chatWindow.scrollHeight;
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+
+    // Add event listener for the Send button
+    const sendMessage = document.getElementById('sendMessage');
+    sendMessage.addEventListener('click', sendChatMessage);
+
+    // Add event listener for the "Enter" key
+    const chatMessage = document.getElementById('chatMessage');
+    chatMessage.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent newline in the input field
+        sendChatMessage();
       }
-
-      chatMessage.value = '';
     });
 
-    canvas.addEventListener('wheel', handleWheel);
+    // Handle mouse/touch events for dragging
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
+      // Check if the mouse is over the text
+      if (
+        mouseX >= textX - textSize &&
+        mouseX <= textX + textSize &&
+        mouseY >= textY - textSize &&
+        mouseY <= textY + textSize
+      ) {
+        isDragging = true;
+        dragOffsetX = mouseX - textX;
+        dragOffsetY = mouseY - textY;
+        canvas.style.cursor = 'grabbing';
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const rect = canvas.getBoundingClientRect();
+        textX = e.clientX - rect.left - dragOffsetX;
+        textY = e.clientY - rect.top - dragOffsetY;
+        redrawCanvas();
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDragging = false;
+      canvas.style.cursor = 'grab';
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      isDragging = false;
+      canvas.style.cursor = 'grab';
+    });
+
+    // Clear button functionality
+    const clearTextButton = document.getElementById('clearText');
+    clearTextButton.addEventListener('click', clearText);
+
+    // Load the product image
     loadProductImage();
   </script>
 </body>
