@@ -12,7 +12,6 @@
       margin: 0;
       padding: 0;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
@@ -24,7 +23,7 @@
       font-size: 4rem;
       text-transform: uppercase;
       text-align: center;
-      margin-bottom: 20px; /* Adjust spacing */
+      margin-bottom: 20px;
       color: #000;
     }
 
@@ -44,11 +43,6 @@
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .product:hover {
-      transform: translateY(-10px); /* Hover effect */
     }
 
     .product img {
@@ -74,7 +68,7 @@
     }
 
     .product:hover .product-details {
-      opacity: 1; /* Fade-in effect on hover */
+      opacity: 1; /* Fade in effect on hover */
     }
 
     .product-details span {
@@ -107,15 +101,14 @@
 <body>
   <div class="container">
     <h1>Customize Your Tumbler</h1>
-    <a href="./product.html?id=1"> <!-- Link to the mug product page -->
-      <div class="product">
-        <img src="./images/mug.png" alt="Custom Water Tumbler">
-        <div class="product-details">
-          <span>$24.99</span>
-          <span>Earliest Arrival: Jan 30, 2025</span>
-        </div>
+    <div class="product">
+      <img src="./images/mug.png" alt="Custom Water Tumbler">
+      <div class="product-details">
+        <span>$24.99</span>
+        <span>Earliest Arrival: Jan 30, 2025</span>
+        <a href="./product.html?id=1" class="button">Customize Now</a>
       </div>
-    </a>
+    </div>
   </div>
 </body>
 </html>
