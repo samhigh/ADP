@@ -4,106 +4,96 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Custom Tumbler</title>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&display=swap" rel="stylesheet">
   <style>
     /* General Styles */
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Oswald', sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: #fff;
+      background: #fff; /* All-white background for a clean, bold look */
+      color: #333;
     }
 
     h1 {
-      font-family: 'Oswald', sans-serif;
-      font-size: 3rem;
+      font-size: 4rem;
       text-transform: uppercase;
-      margin: 0;
-      padding: 20px;
       text-align: center;
+      margin-bottom: 20px;
+      color: #000;
     }
 
     .container {
       text-align: center;
-      max-width: 800px;
+      max-width: 1200px;
       margin: auto;
     }
 
     .product {
       position: relative;
       display: inline-block;
-      width: 400px;
-      height: 600px;
+      width: 700px; /* Larger than life size */
+      height: 1000px; /* Scale height proportionally */
       background-color: #fefefe;
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       cursor: pointer;
-    }
-
-    .product:hover {
-      transform: translateY(-10px);
     }
 
     .product img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain; /* Ensures the tumbler scales perfectly */
     }
 
     .product-details {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.7);
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
       color: #fff;
-      padding: 20px;
+      padding: 20px 30px;
+      border-radius: 10px;
       text-align: center;
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
+      font-size: 1.5rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
     .product:hover .product-details {
-      transform: translateY(0);
+      opacity: 1; /* Fade in effect on hover */
     }
 
-    .product-details h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-
-    .product-details p {
-      margin: 5px 0;
-      font-size: 1rem;
-      font-weight: 300;
+    .product-details span {
+      display: block;
+      margin-bottom: 10px;
     }
 
     .button {
       margin-top: 10px;
       display: inline-block;
-      padding: 10px 20px;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #222;
-      background: #fff;
-      border: none;
-      border-radius: 5px;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: 700;
       text-transform: uppercase;
+      color: #333;
+      background: #fff;
+      border: 2px solid #000;
+      border-radius: 5px;
       text-decoration: none;
       cursor: pointer;
-      transition: background 0.3s ease, color 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .button:hover {
-      background: #222;
+      background: #000;
       color: #fff;
     }
   </style>
@@ -112,10 +102,10 @@
   <div class="container">
     <h1>Customize Your Tumbler</h1>
     <div class="product">
-      <img src="/Users/samhigh/my-app/ADP/images/mug.png" alt="Custom Water Tumbler">
+      <img src="./images/mug.png" alt="Custom Water Tumbler">
       <div class="product-details">
-        <h2>$24.99</h2>
-        <p>Earliest Arrival: Jan 30, 2025</p>
+        <span>$24.99</span>
+        <span>Earliest Arrival: Jan 30, 2025</span>
         <a href="./product.html?id=1" class="button">Customize Now</a>
       </div>
     </div>
